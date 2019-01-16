@@ -1,3 +1,15 @@
+#!/usr/bin/env python3
+""" sds011.py. basic python script to read values from nova pm sensor sds011.
+
+Usage:
+    sds011.py [-h | --help] [-d | --debug]
+
+Options:
+    -h --help       Show this screen.
+    -d --debug      Show debug information.
+"""
+
+import docopt
 import logging
 import serial
 import struct
@@ -6,6 +18,7 @@ import sys
 logger = logging.getLogger(__name__)
 logger_handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(logger_handler)
+logger.setLevel('INFO')
 
 
 SLEEP_BYTES = ['\xaa', #head
@@ -94,6 +107,10 @@ def sensor_read(ser):
 
 
 def main():
+    arguments = docopt.docopt(__doc__)
+    if arguments['--debug']:
+        logger.setLevel('DEBUG')
+
     ser = open_serial("/dev/ttyUSB0")
     wake_up(ser)
 
