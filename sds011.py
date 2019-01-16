@@ -1,5 +1,11 @@
+import logging
 import serial
 import struct
+import sys
+
+logger = logging.getLogger(__name__)
+logger_handler = logging.StreamHandler(sys.stdout)
+logger.addHandler(logger_handler)
 
 
 SLEEP_BYTES = ['\xaa', #head
@@ -44,7 +50,7 @@ WAKE_BYTES = ['\xaa', #head
 
 
 def open_serial(path):
-    print('Open serial port')
+    logger.debug('Open serial port')
     ser = serial.Serial()
     #ser.port = sys.argv[1]
     ser.port = path
@@ -52,15 +58,15 @@ def open_serial(path):
 
     ser.open()
     ser.flushInput()
-    print('Connected to device')
+    logger.debug('Connected to device')
     return ser
 
 
 def wake_up(ser):
-    print('Waking up')
+    logger.debug('Waking up')
     for b in WAKE_BYTES:
         ser.write(b.encode())
-    print('Waked up')
+    logger.debug('Waked up')
 
 
 def sleep(ser):
@@ -69,10 +75,10 @@ def sleep(ser):
 
 
 def sensor_read(ser):
-    print('Reading values')
+    logger.debug('Reading values')
     byte = 0
     while byte != "\xaa":
-        print('Continue reading')
+        logger.debug('Continue reading')
         byte = ser.read(size=1)
         d = byte + ser.read(size=10)
         if d[1].to_bytes(1, byteorder='big') == b'\xc0':
@@ -82,7 +88,7 @@ def sensor_read(ser):
             checksum = sum(d[2:8])%256
 
             if not (checksum == r[2] and r[3].to_bytes(1, byteorder='big') == b'\xab'):
-                print('Check sum not match')
+                logger.error('Checksum does not match')
                 return
             return {'pm25': pm25, 'pm10': pm10}
 
@@ -93,7 +99,7 @@ def main():
 
     while True:
         data = sensor_read(ser)
-        print(data)
+        logger.info(data)
 
 if __name__ == '__main__':
     main()
