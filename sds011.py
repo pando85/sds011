@@ -9,6 +9,7 @@ Options:
     -d --debug      Show debug information.
 """
 
+import datetime
 import docopt
 import logging
 import serial
@@ -103,7 +104,7 @@ def sensor_read(ser):
             if not (checksum == r[2] and r[3].to_bytes(1, byteorder='big') == b'\xab'):
                 logger.error('Checksum does not match')
                 return
-            return {'pm25': pm25, 'pm10': pm10}
+            return {'pm25': pm25, 'pm10': pm10, 'timestamp': str(datetime.datetime.now())}
 
 
 def main():
